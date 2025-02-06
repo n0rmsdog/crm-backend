@@ -8,7 +8,9 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 
 app = FastAPI()
-
+@app.get("/")
+def home():
+    return {"message": "Welcome to the CRM API!"}
 # Database Connection
 client = MongoClient("mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = client["crm_backend"]
