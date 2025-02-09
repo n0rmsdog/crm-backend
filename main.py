@@ -17,7 +17,7 @@ ALGORITHM = "HS256"
 app = FastAPI()
 
 # ✅ MongoDB Connection
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongod")
 db = client["crm_database"]
 
 # Collections
