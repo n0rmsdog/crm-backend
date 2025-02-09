@@ -133,8 +133,5 @@ async def get_gps_data(token: str = Depends(verify_token)):
 async def protected_route(token: str = Depends(verify_token)):
     return {"message": "You have access to this route"}
 
-# ✅ Force Start on Port 8000 for Render
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=PORT)
+
 
