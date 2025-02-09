@@ -10,7 +10,7 @@ app = FastAPI()
 # Load MongoDB connection string from environment variables
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true")
 client = MongoClient(MONGO_URI)
-db = client["crm_db"]
+db = client["crm_backend"]
 
 # OAuth2 authentication setup
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -18,8 +18,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Dummy user database (replace with real user authentication later)
 fake_users_db = {
     "admin": {
-        "username": "admin",
-        "password": "password123",
+        "username": "norms",
+        "password": "crm",
         "role": "admin"
     }
 }
