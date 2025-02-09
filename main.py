@@ -18,7 +18,7 @@ app = FastAPI()
 
 # ✅ MongoDB Connection
 client = MongoClient("mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongod")
-db = client["crm_database"]
+db = client["crm_backend"]
 
 # Collections
 customers_collection = db["customers"]
