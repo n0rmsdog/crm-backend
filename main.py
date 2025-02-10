@@ -21,6 +21,7 @@ invoices_collection = db["invoices"]
 calendar_collection = db["calendar"]
 gps_collection = db["gps_tracking"]
 users_collection = db["users"]
+time_tracking_collection = db["time_tracking"]
 
 # ✅ Authentication Setup
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -166,6 +167,26 @@ async def get_users(token: dict = Depends(verify_token)):
     users = list(users_collection.find({}, {"_id": 0}))
     return users
 
+# ----------------- ✅ JOB TIME TRACKING -----------------
+
+class TimeTracking(BaseModel):
+    employee: str
+    job_id: str
+    start_time: str  # YYYY-MM-DD HH:MM:SS
+    end_time: str  # YYYY-MM-DD HH:MM:SS
+
+@app.post("/time-tracking/")
+async def track_time(entry: TimeTracking, token: dict = Depends(verify_token)):
+    """Log job time tracking for employees."""
+    time_tracking_collection.insert_one(entry.dict())
+    return {"message": "Time tracking entry saved"}
+
+@app.get("/time-tracking/")
+async def get_time_tracking(token: dict = Depends(verify_token)):
+    """Retrieve all time tracking entries."""
+    time_entries = list(time_tracking_collection.find({}, {"_id": 0}))
+    return time_entries
+
 # ----------------- ✅ PROTECTED ROUTES -----------------
 
 @app.get("/protected")
@@ -177,3 +198,8 @@ async def protected_route(token: dict = Depends(verify_token)):
 @app.get("/")
 def home():
     return {"message": "Welcome to the CRM API!"}
+
+# ✅ Prevent Render from Shutting Down
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)
