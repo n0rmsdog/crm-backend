@@ -16,8 +16,9 @@ ALGORITHM = "HS256"
 # ✅ Initialize FastAPI App
 app = FastAPI()
 
-# ✅ MongoDB Connection
-client = MongoClient("mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongod")
+# ✅ MongoDB Connection (Updated URI)
+MONGO_URI = "mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(MONGO_URI)
 db = client["crm_backend"]
 
 # Collections
@@ -132,6 +133,3 @@ async def get_gps_data(token: str = Depends(verify_token)):
 @app.get("/protected")
 async def protected_route(token: str = Depends(verify_token)):
     return {"message": "You have access to this route"}
-
-
-
