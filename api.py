@@ -22,7 +22,7 @@ ALGORITHM = "HS256"
 # ✅ Dummy User Database (Replace with real authentication)
 fake_users_db = {
     "admin": {
-        "username": "admin",
+        "username": "norms",
         "password": "crm",  # ⚠️ Replace with hashed passwords
         "role": "admin"
     }
