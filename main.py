@@ -29,10 +29,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "G1-WlvEmko2Q0oG7H6wIOWUwBx_r0P_gUX8Q5VnrcOU"
 ALGORITHM = "HS256"
 
-# ✅ User Database (For Testing Purposes)
-fake_users_db = {
-    "admin": {"username": "norms", "password": "crm", "role": "admin"}
-}
 
 # ✅ Initialize FastAPI App
 app = FastAPI()
