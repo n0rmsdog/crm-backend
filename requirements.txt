@@ -4,6 +4,6 @@ pymongo
 PyJWT
 python-jose[cryptography]
 passlib[bcrypt]
-
+certifi
 python-multipart
 gunicorn
