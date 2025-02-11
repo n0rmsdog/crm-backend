@@ -7,8 +7,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pymongo import MongoClient
 from pydantic import BaseModel
 
-# ✅ Force Render to Use Port 8000
-PORT = 8000
 
 # ✅ Load MongoDB Connection from Environment
 MONGO_URI = "mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true"
