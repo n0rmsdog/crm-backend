@@ -1,40 +1,39 @@
 import os
 import jwt
-import certifi
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pymongo import MongoClient
 from pydantic import BaseModel
+import certifi  # ✅ Fix SSL issues with MongoDB
 
+# ✅ Force Render to Use Environment Port
+PORT = int(os.getenv("PORT", 8000))  # Render assigns a PORT dynamically
 
-# ✅ Load MongoDB Connection from Environment
-MONGO_URI = "mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority&tls=true&tlsAllowInvalidCertificates=true"
-
-# ✅ Secure MongoDB Connection (Fixes SSL/TLS Issue)
-client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
+# ✅ MongoDB Connection (Render)
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://n0rms:2m6dUSyTbwvfpbFq@cluster0.nf19p.mongodb.net/?retryWrites=true&w=majority")
+client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())  # ✅ Fix TLS issue
 db = client["crm_backend"]
 
-# ✅ Define MongoDB Collections
+# ✅ Collections
 customers_collection = db["customers"]
 jobs_collection = db["jobs"]
 invoices_collection = db["invoices"]
 calendar_collection = db["calendar"]
 gps_collection = db["gps_tracking"]
 users_collection = db["users"]
-time_tracking_collection = db["time_tracking"]
 
 # ✅ Authentication Setup
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "G1-WlvEmko2Q0oG7H6wIOWUwBx_r0P_gUX8Q5VnrcOU"
 ALGORITHM = "HS256"
 
+# ✅ Dummy User Database (Replace with real authentication)
+fake_users_db = {"admin": {"username": "norms", "password": "crm", "role": "admin"}}
 
-# ✅ Initialize FastAPI App
 app = FastAPI()
 
 # ----------------- ✅ AUTHENTICATION -----------------
-
 def create_access_token(data: dict):
     """Generate a JWT access token."""
     expire = datetime.utcnow() + timedelta(days=7)  # 7-day expiration
@@ -61,137 +60,24 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     token = create_access_token({"sub": user["username"]})
     return {"access_token": token, "token_type": "bearer"}
 
-# ----------------- ✅ CUSTOMERS -----------------
-
-class Customer(BaseModel):
-    name: str
-    email: str
-
-@app.post("/customers/")
-async def create_customer(customer: Customer, token: dict = Depends(verify_token)):
-    customers_collection.insert_one(customer.dict())
-    return {"message": "Customer added successfully"}
+# ----------------- ✅ ROUTES -----------------
+@app.get("/")
+def home():
+    return {"message": "Welcome to the CRM API!"}
 
 @app.get("/customers/")
 async def get_customers(token: dict = Depends(verify_token)):
     customers = list(customers_collection.find({}, {"_id": 0}))
     return customers
 
-# ----------------- ✅ JOBS -----------------
+@app.post("/customers/")
+async def create_customer(customer: BaseModel, token: dict = Depends(verify_token)):
+    customers_collection.insert_one(customer.dict())
+    return {"message": "Customer added successfully"}
 
-class Job(BaseModel):
-    title: str
-    description: str
-    assigned_to: str
+# ✅ Add similar routes for jobs, invoices, etc.
 
-@app.post("/jobs/")
-async def create_job(job: Job, token: dict = Depends(verify_token)):
-    jobs_collection.insert_one(job.dict())
-    return {"message": "Job added successfully"}
-
-@app.get("/jobs/")
-async def get_jobs(token: dict = Depends(verify_token)):
-    jobs = list(jobs_collection.find({}, {"_id": 0}))
-    return jobs
-
-# ----------------- ✅ INVOICES -----------------
-
-class Invoice(BaseModel):
-    customer: str
-    amount: float
-    status: str  # Paid, Unpaid, Pending
-
-@app.post("/invoices/")
-async def create_invoice(invoice: Invoice, token: dict = Depends(verify_token)):
-    invoices_collection.insert_one(invoice.dict())
-    return {"message": "Invoice added successfully"}
-
-@app.get("/invoices/")
-async def get_invoices(token: dict = Depends(verify_token)):
-    invoices = list(invoices_collection.find({}, {"_id": 0}))
-    return invoices
-
-# ----------------- ✅ CALENDAR -----------------
-
-class Event(BaseModel):
-    title: str
-    date: str  # YYYY-MM-DD
-    details: str
-
-@app.post("/calendar/")
-async def create_event(event: Event, token: dict = Depends(verify_token)):
-    calendar_collection.insert_one(event.dict())
-    return {"message": "Event added successfully"}
-
-@app.get("/calendar/")
-async def get_events(token: dict = Depends(verify_token)):
-    events = list(calendar_collection.find({}, {"_id": 0}))
-    return events
-
-# ----------------- ✅ GPS TRACKING -----------------
-
-class GPSData(BaseModel):
-    user: str
-    latitude: float
-    longitude: float
-    timestamp: str
-
-@app.post("/gps/")
-async def save_gps_data(gps_data: GPSData, token: dict = Depends(verify_token)):
-    gps_collection.insert_one(gps_data.dict())
-    return {"message": "GPS data saved successfully"}
-
-@app.get("/gps/")
-async def get_gps_data(token: dict = Depends(verify_token)):
-    gps_data = list(gps_collection.find({}, {"_id": 0}))
-    return gps_data
-
-# ----------------- ✅ USERS -----------------
-
-class User(BaseModel):
-    username: str
-    password: str
-
-@app.post("/users/")
-async def create_user(user: User, token: dict = Depends(verify_token)):
-    """Register a new user."""
-    users_collection.insert_one(user.dict())
-    return {"message": "User registered successfully"}
-
-@app.get("/users/")
-async def get_users(token: dict = Depends(verify_token)):
-    """Get list of users."""
-    users = list(users_collection.find({}, {"_id": 0}))
-    return users
-
-# ----------------- ✅ JOB TIME TRACKING -----------------
-
-class TimeTracking(BaseModel):
-    user: str
-    job_id: str
-    start_time: str
-    end_time: str
-
-@app.post("/time-tracking/")
-async def log_time(time_data: TimeTracking, token: dict = Depends(verify_token)):
-    """Log work time for an employee."""
-    time_tracking_collection.insert_one(time_data.dict())
-    return {"message": "Work time logged successfully"}
-
-@app.get("/time-tracking/")
-async def get_time_logs(token: dict = Depends(verify_token)):
-    """Get work time logs."""
-    time_logs = list(time_tracking_collection.find({}, {"_id": 0}))
-    return time_logs
-
-# ----------------- ✅ PROTECTED ROUTES -----------------
-
-@app.get("/protected")
-async def protected_route(token: dict = Depends(verify_token)):
-    """A protected route requiring authentication."""
-    return {"message": "You have access to this route"}
-
-# ✅ Welcome Route
-@app.get("/")
-def home():
-    return {"message": "Welcome to the CRM API!"}
+# ✅ Run FastAPI on Render's Assigned Port
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT)
